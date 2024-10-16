@@ -458,6 +458,5 @@ target_profile_wraithguard = {
 target_profile_screamer_killer = {
     'toughness': 9,
     'armour_save': 2,
-    'feel_no_pain': 5,
     'unit_wounds_profile': [10]
 }

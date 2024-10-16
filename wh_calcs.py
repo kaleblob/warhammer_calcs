@@ -337,13 +337,14 @@ target_profile = deepcopy(target)
 
 
 
-# ----- NOTE: MODIFY THIS TO ADD EFFECTS TO YOUR ATTACK ----- #
+# ----- NOTE: MODIFY THIS TO ADD EFFECTS TO YOUR ATTACK/TARGET ----- #
 extra_effects = {
     'lethal_hits': True,    # from martial kata
     'crit_hit_roll': 5,     # from shield host detachment rule
-    'attacks_mod': +1       # from avenge the fallen stratagem
+    'attacks_mod': +1,      # from avenge the fallen stratagem
+    'feel_no_pain': 5       # from tyranid rapid regeneration stratagem
 }
-# ----------------------------------------------------------- #
+# ------------------------------------------------------------------ #
 
 
 

@@ -123,13 +123,30 @@ sm_plasma_incinerator_supercharge = {
     'ap': 3,
     'damage': 2,
 }
-sm_aggressors_power_fists = {
+sm_terminator_power_fists = {
     'attacks': 3,
     'ballistic_skill': 3,
     'strength': 8,
     'ap': 2,
-    'ignore_cover': True,
+    'ignores_cover': True,
     'damage': 2,
+}
+sm_thunder_hammer = {
+    'attacks': 3,
+    'ballistic_skill': 4,
+    'strength': 8,
+    'ap': 2,
+    'dev_wounds': True,
+    'ignores_cover': True,
+    'damage': 2,
+}
+sm_chaplain_crozius = {
+    'attacks': 5,
+    'ballistic_skill': 3,
+    'strength': 6,
+    'ap': 1,
+    'ignores_cover': True,
+    'damage': 2
 }
 sm_plasma_pistol = {
     'attacks': 1,
@@ -459,4 +476,12 @@ target_profile_screamer_killer = {
     'toughness': 9,
     'armour_save': 2,
     'unit_wounds_profile': [10]
+}
+
+
+
+target_profile_warhound_titan = {
+    'toughness': 13,
+    'armour_save': 2,
+    'unit_wounds_profile': [40]
 }

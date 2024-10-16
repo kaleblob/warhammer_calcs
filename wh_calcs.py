@@ -175,7 +175,7 @@ def make_attacks(
     elif str_tough_ratio >= 2:
         wound_roll = 2
 
-    wound_roll += wound_mod
+    wound_roll -= wound_mod
     if wound_roll < 2:
         wound_roll = 2
     
@@ -331,7 +331,7 @@ extra_effects = {
 
 
 # ----- NOTE: CHANGE THIS TO SELECT TARGET ----- #
-target = target_profile_screamer_killer
+target = target_profile_land_raider
 # ---------------------------------------------- #
 target_profile = deepcopy(target)
 
@@ -339,10 +339,11 @@ target_profile = deepcopy(target)
 
 # ----- NOTE: MODIFY THIS TO ADD EFFECTS TO YOUR ATTACK/TARGET ----- #
 extra_effects = {
-    'lethal_hits': True,    # from martial kata
-    'crit_hit_roll': 5,     # from shield host detachment rule
-    'attacks_mod': +1,      # from avenge the fallen stratagem
-    'feel_no_pain': 5       # from tyranid rapid regeneration stratagem
+    # 'attacks_mod': 1,
+    # 'hit_mod': +1,
+    'hit_reroll': True,
+    'wound_reroll': True,
+    'wound_mod': +1,
 }
 # ------------------------------------------------------------------ #
 
@@ -350,7 +351,7 @@ extra_effects = {
 
 # repeat scenario some large amount of times, get distribution of outcomes
 # NOTE: lower this number if it gets too slow when doing something with many different attacks
-n_trials = 10000
+n_trials = 20000
 
 damage_done = np.zeros(n_trials)
 models_killed = np.zeros(n_trials)
@@ -365,10 +366,10 @@ for i in range(n_trials):
 
     # ----- NOTE: ADD YOUR ATTACKS HERE ----- #
     target_profile['unit_wounds_profile'] = make_attacks(
-        num_weapons=1, **{**blade_champion_victus, **target_profile, **extra_effects}, statistics_dict=statistics
+        num_weapons=10, **{**sm_thunder_hammer, **target_profile, **extra_effects}, statistics_dict=statistics
     )
     target_profile['unit_wounds_profile'] = make_attacks(
-        num_weapons=3, **{**guardian_spear, **target_profile, **extra_effects}, statistics_dict=statistics
+        num_weapons=1, **{**sm_chaplain_crozius, **target_profile, **extra_effects}, statistics_dict=statistics
     )
     # --------------------------------------- #
 

@@ -48,12 +48,12 @@ attack_profile_template = {
 
 target_profile_template = {
     'toughness': 5,
-    'armour_save': 2,               # NOTE:  armour, invuln, and fnp of 7 or more means there is no armour/invuln/fnp save
+    'armour_save': 2,               # NOTE:  armour, invuln, and fnp of 7 or more means there is no armour/invuln/fnp save.  None also works
     'cover': False,
-    'invuln_save': 7,
+    'invuln_save': None,
     'halve_damage': False,          # always applied first and rounded up
     'damage_mod': -1,               # damage_mod is always applied after halving damage
-    'feel_no_pain': 7,
+    'feel_no_pain': None,
     # 'starting strength': 5,       # TODO: implement 'below_half_strength'.  but does it really matter though?  not unless there are multiple attacking units.
     'unit_wounds_profile': [4, 4, 3, 3, 3],    # target will always be selected first to last (left to right)
 }
@@ -82,7 +82,7 @@ extra_effects_template = {
 
 
 
-### Space Marines ##
+### Space Marines ###
 
 sm_bolt_rifle = {
     'attacks': 2,
@@ -154,23 +154,32 @@ guardian_spear = {
     'attacks': 5,
     'ballistic_skill': 2,
     'strength': 7,
-    'wound_reroll_1': True,
+    'wound_reroll_1': False,
     'ap': 2,
     'damage': 2,
 }
+# # buffed gigachad victus
+# blade_champion_victus = {
+#     'attacks': 7,
+#     'ballistic_skill': 2,
+#     'dev_wounds': True,
+#     'lethal_hits': True,
+#     'sustained_hits': 1,
+#     'crit_hit_roll': 5,
+#     'strength': 7,
+#     'wound_reroll': False,
+#     'ap': 3,
+#     'damage': 4,
+# }
+# regular victus
 blade_champion_victus = {
-    'attacks': 7,
+    'attacks': 5,
     'ballistic_skill': 2,
     'dev_wounds': True,
-    'lethal_hits': True,
-    'sustained_hits': 1,
-    'crit_hit_roll': 5,
     'strength': 7,
-    'wound_reroll': False,
     'ap': 3,
-    'damage': 4,
+    'damage': 3,
 }
-
 
 
 ### Deathguard ###
@@ -391,6 +400,10 @@ eldar_wraithcannon = {
 
 ##### TARGET PROFILES #####
 
+
+# TODO:  add points values, allows measurement of points per wound, or attacks needed to kill 100 pts worth of models, etc
+
+
 target_profile_land_raider = {
     'toughness': 12,
     'armour_save': 2,
@@ -441,4 +454,10 @@ target_profile_wraithguard = {
     'armour_save': 2,
     'feel_no_pain': 6,
     'unit_wounds_profile': [3]*10
+}
+target_profile_screamer_killer = {
+    'toughness': 9,
+    'armour_save': 2,
+    'feel_no_pain': 5,
+    'unit_wounds_profile': [10]
 }

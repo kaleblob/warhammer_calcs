@@ -21,6 +21,7 @@ from wh_profiles import *
 # ~~~ ignoring these for now ~~~
 
 
+
 def make_attacks(
     # required parameters
     strength,
@@ -61,10 +62,10 @@ def make_attacks(
     cp_reroll = False,          # TODO:  a reroll used only once throughout this attack, prioritises damage > wound > hit
 
     # target parameters
-    invuln_save = 7,
+    invuln_save = None,
     cover = False,
     halve_damage = False,
-    feel_no_pain = 7,
+    feel_no_pain = None,
 
     # mods
     attacks_mod= 0,
@@ -90,9 +91,14 @@ def make_attacks(
     target_profile['unit_wounds_profile'] = make_attacks(**{**attack_profile_2, **extra_effects}, **target_profile)
 
     Returns: 
-        List:   each entry gives the remaining wounds of each model in the target unit
+        List:   each entry is the remaining wounds of each model in the target unit
     """
 
+    # so that invuln_save and feel_no_pain can be set to None without breaking anything
+    if not invuln_save:
+        invuln_save = 7
+    if not feel_no_pain:
+        feel_no_pain = 7
 
     # get which model in the unit to target
     for model_id in range(len(unit_wounds_profile)):
@@ -287,6 +293,7 @@ def make_attacks(
 
 
 
+
 LIST_OF_EXTRA_EFFECTS = {
     'attacks_mod': 0,
     'hit_mod': 0,
@@ -296,7 +303,7 @@ LIST_OF_EXTRA_EFFECTS = {
     'ap_mod': 0,            # NOTE: +1 ap_mod improves ap, -1 ap_mod worsens ap
     'armour_mod': 0,        # NOTE: +1 armour_mod worsens armour, -1 armour_mod improves armour
     'damage_mod': 0,
-    'halve_damage': False,  # half damage applies before damage_mod
+    'halve_damage': False,  # halve damage applies before damage_mod
 
     # apart from the above mods, you can override literally any other characteristic here like so
     'lethal_hits': True,
@@ -306,67 +313,63 @@ LIST_OF_EXTRA_EFFECTS = {
 }
 
 
+# NOTE: use **dict to unpack a dictionary like so:
 stinky = {
     'toughness_mod': -1,
     'armour_mod': +1
 }
-
-# NOTE: use **dict to unpack a dictionary like so:
-# extra_effects = {
-#     'crit_hit_roll': 5,
-#     'lethal_hits',
-#     **stinky,
-# }
-
-### NOTE: MODIFY THIS TO ADD EFFECTS TO YOUR ATTACK ###
 extra_effects = {
-    'attacks_mod': 1,       # from rapid fire
-    'hit_mod': 1,           # from take aim order
-    'lethal_hits': True,    # from standing stationary
+    'crit_hit_roll': 5,
+    'lethal_hits': True,
+    **stinky,
 }
 
-# target = {
-#     'toughness': 8,
-#     'armour_save': 2,
-#     'unit_wounds_profile': [7, 7, 7],
-# }
 
-### NOTE: CHANGE THIS HERE TO SELECT TARGET ###
-target = target_profile_space_marines
+
+
+
+
+
+# ----- NOTE: CHANGE THIS TO SELECT TARGET ----- #
+target = target_profile_screamer_killer
+# ---------------------------------------------- #
 target_profile = deepcopy(target)
+
+
+
+# ----- NOTE: MODIFY THIS TO ADD EFFECTS TO YOUR ATTACK ----- #
+extra_effects = {
+    'lethal_hits': True,    # from martial kata
+    'crit_hit_roll': 5,     # from shield host detachment rule
+    'attacks_mod': +1       # from avenge the fallen stratagem
+}
+# ----------------------------------------------------------- #
+
 
 
 # repeat scenario some large amount of times, get distribution of outcomes
 # NOTE: lower this number if it gets too slow when doing something with many different attacks
-n_trials = 20000
+n_trials = 10000
+
 damage_done = np.zeros(n_trials)
 models_killed = np.zeros(n_trials)
 max_wounds = 0
 for i in range(len(target_profile['unit_wounds_profile'])):
     max_wounds += target_profile['unit_wounds_profile'][i]
 
-
+# make attacks n_trials times
 for i in range(n_trials):
     target_profile = deepcopy(target)
     statistics = {'total_damage': 0}
 
-    # make attacks
-    ### NOTE: ADD YOUR ATTACKS HERE ###
+    # ----- NOTE: ADD YOUR ATTACKS HERE ----- #
     target_profile['unit_wounds_profile'] = make_attacks(
-        num_weapons=2, **{**guard_plasma_gun_supercharge, **target_profile, **extra_effects}, statistics_dict=statistics
+        num_weapons=1, **{**blade_champion_victus, **target_profile, **extra_effects}, statistics_dict=statistics
     )
     target_profile['unit_wounds_profile'] = make_attacks(
-        num_weapons=2, **{**guard_plasma_pistol_supercharge, **target_profile, **{'hit_mod': 1, 'lethal_hits': True}}, statistics_dict=statistics
+        num_weapons=3, **{**guardian_spear, **target_profile, **extra_effects}, statistics_dict=statistics
     )
-    target_profile['unit_wounds_profile'] = make_attacks(
-        num_weapons=2, **{**guard_meltagun, **target_profile, **{'hit_mod': 1, 'lethal_hits': True}}, statistics_dict=statistics
-    )
-    target_profile['unit_wounds_profile'] = make_attacks(
-        num_weapons=2, **{**guard_grenade_krak, **target_profile, **{'hit_mod': 1, 'lethal_hits': True}}, statistics_dict=statistics
-    )
-    target_profile['unit_wounds_profile'] = make_attacks(
-        num_weapons=12, **{**guard_lasgun, **target_profile, **extra_effects}, statistics_dict=statistics
-    )
+    # --------------------------------------- #
 
     # store results
     damage_done[i] = statistics['total_damage']
@@ -374,16 +377,24 @@ for i in range(n_trials):
 
 
 
-# plot histogram, print probability of killing unit
+
+
+# plot histograms, print probability of killing unit
 n_kills = (models_killed==len(target_profile['unit_wounds_profile'])).sum()
 print(f'Probability of killing unit:  {n_kills/n_trials}')
-plt.hist(damage_done, bins=np.arange(max_wounds+2)-0.5, density=True, cumulative=False)
-plt.xlabel('total damage')
-plt.ylabel('probability')
+
+counts, edges, bars = plt.hist(damage_done, bins=np.arange(max_wounds+2)-0.5, density=True, cumulative=False)
+plt.bar_label(bars, rotation='vertical')
+plt.xticks(np.arange(0, max_wounds+1))
+plt.xlabel('Total Damage')
+plt.ylabel('Probability')
 plt.show()
-plt.hist(models_killed, bins=np.arange(len(target_profile['unit_wounds_profile'])+2)-0.5, density=True, cumulative=False)
-plt.xlabel('models slain')
-plt.ylabel('probability')
+
+counts, edges, bars = plt.hist(models_killed, bins=np.arange(len(target_profile['unit_wounds_profile'])+2)-0.5, density=True, cumulative=False)
+plt.bar_label(bars, rotation='vertical')
+plt.xticks(np.arange(0, len(target_profile['unit_wounds_profile']) + 1 ))
+plt.xlabel('Models Slain')
+plt.ylabel('Probability')
 plt.show()
 
 

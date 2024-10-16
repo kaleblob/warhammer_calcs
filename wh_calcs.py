@@ -40,16 +40,18 @@ def make_attacks(
     ballistic_skill = 7,
     torrent = False,
     crit_hit_roll = 6,
-    hit_reroll_1 = False,
-    hit_reroll = False,
-    hit_reroll_no_crit = False,
+    reroll_hits_of_1 = False,
+    reroll_hits = False,
+    reroll_hits_no_crit = False,
+    reroll_1_hit = False,
     lethal_hits = False,
     sustained_hits = 0,
 
     crit_wound_roll = 6,
-    wound_reroll_1 = False,
-    wound_reroll = False,
-    wound_reroll_no_crit = False,
+    reroll_wounds_of_1 = False,
+    reroll_wounds = False,
+    reroll_wounds_no_crit = False,
+    reroll_1_wound = False,
     dev_wounds = False,
 
     ap = 0,
@@ -137,7 +139,9 @@ def make_attacks(
 
 
     # get hits and crit hits
-    if torrent:
+    if num_attacks <= 0:
+        pass
+    elif torrent:
         hits = num_attacks
         crit_hits = 0
     else:
@@ -148,12 +152,15 @@ def make_attacks(
         
         # make hit rolls
         rolls = np.random.randint(1, 7, num_attacks)
-        if hit_reroll_no_crit:
+        if reroll_hits_no_crit:
             rolls[rolls<crit_hit_roll] = np.random.randint(1, 7, (rolls<crit_hit_roll).sum())
-        elif hit_reroll:
+        elif reroll_hits:
             rolls[rolls<hit_roll] = np.random.randint(1, 7, (rolls<hit_roll).sum())
-        elif hit_reroll_1:
+        elif reroll_hits_of_1:
             rolls[rolls==1] = np.random.randint(1, 7, (rolls==1).sum())
+        elif reroll_1_hit:
+            if rolls[rolls.argmin()] < hit_roll:
+                rolls[rolls.argmin()] = np.random.randint(1, 7)
 
         hits = np.logical_and(rolls>=hit_roll, rolls<crit_hit_roll).sum()
         crit_hits = (rolls>=crit_hit_roll).sum()
@@ -186,13 +193,17 @@ def make_attacks(
         rolls_to_make += crit_hits
 
     # do wound rolls
-    rolls = np.random.randint(1, 7, rolls_to_make)
-    if wound_reroll_no_crit:
-        rolls[rolls<crit_wound_roll] = np.random.randint(1, 7, (rolls<crit_wound_roll).sum())
-    elif wound_reroll:
-        rolls[rolls<wound_roll] = np.random.randint(1, 7, (rolls<wound_roll).sum())
-    elif wound_reroll_1:
-        rolls[rolls==1] = np.random.randint(1, 7, (rolls==1).sum())
+    if rolls_to_make > 0:
+        rolls = np.random.randint(1, 7, rolls_to_make)
+        if reroll_wounds_no_crit:
+            rolls[rolls<crit_wound_roll] = np.random.randint(1, 7, (rolls<crit_wound_roll).sum())
+        elif reroll_wounds:
+            rolls[rolls<wound_roll] = np.random.randint(1, 7, (rolls<wound_roll).sum())
+        elif reroll_wounds_of_1:
+            rolls[rolls==1] = np.random.randint(1, 7, (rolls==1).sum())
+        elif reroll_1_wound:
+            if rolls[rolls.argmin()] < wound_roll:
+                rolls[rolls.argmin()] = np.random.randint(1, 7)
     
     # calculate number of wounds and crit wounds
     wounds = np.logical_and(rolls>=wound_roll, rolls<crit_wound_roll).sum()
@@ -339,11 +350,10 @@ target_profile = deepcopy(target)
 
 # ----- NOTE: MODIFY THIS TO ADD EFFECTS TO YOUR ATTACK/TARGET ----- #
 extra_effects = {
-    # 'attacks_mod': 1,
-    # 'hit_mod': +1,
-    'hit_reroll': True,
-    'wound_reroll': True,
-    'wound_mod': +1,
+    'hit_mod': +1,              # from wraithseer
+    'lethal_hits': True,        # from wraithseer
+    'reroll_1_hit': True,       # eldar detachment rule
+    'reroll_1_wound': True,     # eldar detachment rule
 }
 # ------------------------------------------------------------------ #
 
@@ -351,7 +361,7 @@ extra_effects = {
 
 # repeat scenario some large amount of times, get distribution of outcomes
 # NOTE: lower this number if it gets too slow when doing something with many different attacks
-n_trials = 20000
+n_trials = 10000
 
 damage_done = np.zeros(n_trials)
 models_killed = np.zeros(n_trials)
@@ -366,10 +376,7 @@ for i in range(n_trials):
 
     # ----- NOTE: ADD YOUR ATTACKS HERE ----- #
     target_profile['unit_wounds_profile'] = make_attacks(
-        num_weapons=10, **{**sm_thunder_hammer, **target_profile, **extra_effects}, statistics_dict=statistics
-    )
-    target_profile['unit_wounds_profile'] = make_attacks(
-        num_weapons=1, **{**sm_chaplain_crozius, **target_profile, **extra_effects}, statistics_dict=statistics
+        num_weapons=10, **{**eldar_wraithcannon, **target_profile, **extra_effects}, statistics_dict=statistics
     )
     # --------------------------------------- #
 
